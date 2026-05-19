@@ -1,65 +1,137 @@
-import Image from "next/image";
+import { 
+  Users, 
+  Calendar, 
+  Wallet, 
+  Activity, 
+  ArrowUpRight, 
+  ArrowDownRight,
+  Plus,
+  Search,
+  Bell,
+  BarChart3
+} from "lucide-react";
+import { cn } from "@/lib/utils";
 
-export default function Home() {
+const stats = [
+  { 
+    label: "Toplam Hasta", 
+    value: "1,284", 
+    change: "+12%", 
+    trend: "up", 
+    icon: Users,
+    color: "bg-blue-500" 
+  },
+  { 
+    label: "Bekleyen Randevu", 
+    value: "14", 
+    change: "+3", 
+    trend: "up", 
+    icon: Calendar,
+    color: "bg-purple-500" 
+  },
+  { 
+    label: "Günlük Tahsilat", 
+    value: "₺12,450", 
+    change: "-5%", 
+    trend: "down", 
+    icon: Wallet,
+    color: "bg-emerald-500" 
+  },
+  { 
+    label: "Aktif Muayene", 
+    value: "4", 
+    change: "Normal", 
+    trend: "neutral", 
+    icon: Activity,
+    color: "bg-orange-500" 
+  },
+];
+
+export default function Dashboard() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-slate-500 dark:text-slate-400">Kliniğinizin genel durumuna hoş geldiniz.</p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
+        <div className="flex items-center gap-3">
+          <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all shadow-lg shadow-blue-500/20">
+            <Plus size={20} />
+            Yeni Kayıt
+          </button>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Hasta ara..." 
+              className="pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all w-64"
             />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+          </div>
         </div>
-      </main>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat) => (
+          <div key={stat.label} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-md transition-all">
+            <div className="flex items-start justify-between">
+              <div className={cn("p-3 rounded-xl text-white", stat.color)}>
+                <stat.icon size={24} />
+              </div>
+              <div className={cn(
+                "flex items-center gap-1 text-sm font-medium",
+                stat.trend === "up" ? "text-emerald-500" : stat.trend === "down" ? "text-red-500" : "text-slate-400"
+              )}>
+                {stat.change}
+                {stat.trend === "up" && <ArrowUpRight size={16} />}
+                {stat.trend === "down" && <ArrowDownRight size={16} />}
+              </div>
+            </div>
+            <div className="mt-4">
+              <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{stat.label}</p>
+              <h3 className="text-2xl font-bold mt-1">{stat.value}</h3>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Charts & Lists Placeholder */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Main Chart Area */}
+        <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-8 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm h-[400px] flex flex-col items-center justify-center text-center">
+          <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-full text-blue-500 mb-4">
+            <BarChart3 size={40} />
+          </div>
+          <h3 className="text-xl font-semibold">Gelir Analizi</h3>
+          <p className="text-slate-500 dark:text-slate-400 mt-2">Grafik bileşenleri buraya eklenecek.</p>
+        </div>
+
+        {/* Side List */}
+        <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+          <h3 className="text-lg font-bold mb-4">Bekleyen Randevular</h3>
+          <div className="space-y-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 font-bold">
+                    H{i}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">Hasta Adı Soyadı {i}</p>
+                    <p className="text-xs text-slate-500">14:30 - Muayene</p>
+                  </div>
+                </div>
+                <button className="text-xs font-medium text-blue-500 hover:underline">Detay</button>
+              </div>
+            ))}
+          </div>
+          <button className="w-full mt-6 text-sm font-medium text-slate-500 hover:text-blue-600 transition-colors">
+            Tümünü Gör
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
