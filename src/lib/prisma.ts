@@ -8,17 +8,16 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 const getPrisma = () => {
   const dbPath = path.join(process.cwd(), "prisma", "dev.db");
+  const tursoUrl = process.env.TURSO_DATABASE_URL;
 
-  let clientUrl = process.env.TURSO_DATABASE_URL;
-  if (!clientUrl || clientUrl === "undefined" || clientUrl.trim() === "") {
-    clientUrl = `file:${dbPath}`;
-  }
+  const isTurso = tursoUrl && tursoUrl !== "undefined" && tursoUrl.trim() !== "";
+  const clientUrl = isTurso ? tursoUrl : `file:${dbPath}`;
+  const authToken = isTurso ? process.env.TURSO_AUTH_TOKEN : undefined;
 
-  const authToken = (process.env.TURSO_DATABASE_URL && process.env.TURSO_DATABASE_URL !== "undefined") 
-    ? process.env.TURSO_AUTH_TOKEN 
-    : undefined;
+  // Set DATABASE_URL dynamically to satisfy Prisma Client's schema lookup at runtime
+  process.env.DATABASE_URL = clientUrl;
 
-  console.log("Database connection URL configured as:", clientUrl);
+  console.log(`Database: Using LibSQL adapter with URL: ${clientUrl}`);
 
   const libsqlClient = createClient({
     url: clientUrl,
@@ -26,17 +25,10 @@ const getPrisma = () => {
   });
 
   const adapter = new PrismaLibSql(libsqlClient as any);
-
-  const client = new PrismaClient({
+  return new PrismaClient({
     adapter,
     log: ["query"],
   });
-
-  if (process.env.NODE_ENV !== "production") {
-    globalForPrisma.prisma = client;
-  }
-  
-  return client;
 };
 
 export const prisma = globalForPrisma.prisma || getPrisma();
