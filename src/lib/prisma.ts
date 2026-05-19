@@ -9,9 +9,16 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 const getPrisma = () => {
   const dbPath = path.join(process.cwd(), "prisma", "dev.db");
 
-  // Use Turso cloud URL if provided, otherwise fallback to local SQLite file path
-  const clientUrl = process.env.TURSO_DATABASE_URL || `file:${dbPath}`;
-  const authToken = process.env.TURSO_DATABASE_URL ? process.env.TURSO_AUTH_TOKEN : undefined;
+  let clientUrl = process.env.TURSO_DATABASE_URL;
+  if (!clientUrl || clientUrl === "undefined" || clientUrl.trim() === "") {
+    clientUrl = `file:${dbPath}`;
+  }
+
+  const authToken = (process.env.TURSO_DATABASE_URL && process.env.TURSO_DATABASE_URL !== "undefined") 
+    ? process.env.TURSO_AUTH_TOKEN 
+    : undefined;
+
+  console.log("Database connection URL configured as:", clientUrl);
 
   const libsqlClient = createClient({
     url: clientUrl,
