@@ -82,7 +82,7 @@ export async function getReportStats() {
     revenue: {
       thisMonth: revenueThisMonth,
       trend: revenueTrend,
-      byType: paymentsByType.map(p => ({
+      byType: paymentsByType.map((p: any) => ({
         type: p.type,
         amount: p._sum.amount || 0
       }))
