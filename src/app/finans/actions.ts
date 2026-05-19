@@ -25,6 +25,9 @@ export async function createPayment(data: z.infer<typeof paymentSchema>) {
   
   const payment = await prisma.payment.create({
     data: validated,
+    include: {
+      patient: true,
+    }
   });
 
   revalidatePath("/finans");

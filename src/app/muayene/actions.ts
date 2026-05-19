@@ -29,6 +29,10 @@ export async function createExamination(data: z.infer<typeof examinationSchema>)
   
   const examination = await prisma.examination.create({
     data: validated,
+    include: {
+      patient: true,
+      doctor: true,
+    }
   });
 
   revalidatePath("/muayene");

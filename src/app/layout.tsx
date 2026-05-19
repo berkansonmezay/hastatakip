@@ -19,11 +19,17 @@ export const metadata: Metadata = {
   description: "Modern Klinik ve Muayenehane Yönetim Sistemi",
 };
 
-export default function RootLayout({
+import { headers } from "next/headers";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const isLoginPage = pathname === "/login";
+
   return (
     <html lang="tr" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100`}>
@@ -33,12 +39,18 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex h-screen overflow-hidden">
-            <Sidebar />
-            <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          {isLoginPage ? (
+            <main className="min-h-screen w-full">
               {children}
             </main>
-          </div>
+          ) : (
+            <div className="flex h-screen overflow-hidden">
+              <Sidebar />
+              <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+                {children}
+              </main>
+            </div>
+          )}
         </ThemeProvider>
       </body>
     </html>

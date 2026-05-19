@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 
 const paymentSchema = z.object({
   patientId: z.string().min(1, "Hasta seçilmelidir."),
-  amount: z.string().min(1, "Tutar girilmelidir.").transform(v => parseFloat(v)),
+  amount: z.string().min(1, "Tutar girilmelidir."),
   type: z.string().min(1, "Ödeme türü seçilmelidir."),
   notes: z.string().optional(),
 });
@@ -28,9 +28,12 @@ export default function PaymentList({ initialPayments, patients }: { initialPaym
     resolver: zodResolver(paymentSchema),
   });
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: PaymentFormValues) => {
     try {
-      const newPayment = await createPayment(data);
+      const newPayment = await createPayment({
+        ...data,
+        amount: parseFloat(data.amount)
+      });
       setPayments([newPayment, ...payments]);
       setIsModalOpen(false);
       reset();

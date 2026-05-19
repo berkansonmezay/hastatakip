@@ -1,13 +1,20 @@
 import { PrismaClient } from "@prisma/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
+import { PrismaLibSql } from "@prisma/adapter-libsql";
+import { createClient } from "@libsql/client";
 import path from "path";
 import "dotenv/config";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
 const getPrisma = () => {
-  const dbPath = path.join(process.cwd(), "dev.db");
-  const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
+  const dbPath = path.join(process.cwd(), "prisma", "dev.db");
+
+  // Create LibSQL client using local file path
+  const libsqlClient = createClient({
+    url: `file:${dbPath}`,
+  });
+
+  const adapter = new PrismaLibSql(libsqlClient as any);
 
   const client = new PrismaClient({
     adapter,
@@ -21,4 +28,4 @@ const getPrisma = () => {
   return client;
 };
 
-export const prisma = getPrisma();
+export const prisma = globalForPrisma.prisma || getPrisma();

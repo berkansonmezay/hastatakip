@@ -24,10 +24,10 @@ import * as z from "zod";
 const inventoryItemSchema = z.object({
   name: z.string().min(2, "Ürün adı en az 2 karakter olmalıdır."),
   category: z.string().min(2, "Kategori seçilmelidir."),
-  quantity: z.coerce.number().min(0, "Miktar 0'dan küçük olamaz."),
+  quantity: z.string().min(1, "Miktar girilmelidir."),
   unit: z.string().min(1, "Birim seçilmelidir."),
-  unitPrice: z.coerce.number().min(0, "Birim fiyatı 0'dan küçük olamaz."),
-  minThreshold: z.coerce.number().min(0, "Minimum sınır 0'dan küçük olamaz."),
+  unitPrice: z.string().min(1, "Birim fiyatı girilmelidir."),
+  minThreshold: z.string().min(1, "Minimum sınır girilmelidir."),
   expiration: z.string().optional(),
 });
 
@@ -51,15 +51,20 @@ export default function InventoryList({ initialItems }: { initialItems: any[] })
     defaultValues: {
       category: "İlaç",
       unit: "Kutu",
-      quantity: 0,
-      minThreshold: 10,
-      unitPrice: 0,
+      quantity: "0",
+      minThreshold: "10",
+      unitPrice: "0",
     }
   });
 
   const onSubmit = async (data: InventoryFormValues) => {
     try {
-      const newItem = await createInventoryItem(data);
+      const newItem = await createInventoryItem({
+        ...data,
+        quantity: parseFloat(data.quantity),
+        minThreshold: parseFloat(data.minThreshold),
+        unitPrice: parseFloat(data.unitPrice),
+      });
       setItems([newItem, ...items]);
       setIsModalOpen(false);
       reset();

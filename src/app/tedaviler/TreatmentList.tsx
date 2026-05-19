@@ -19,8 +19,8 @@ import * as z from "zod";
 const treatmentSchema = z.object({
   name: z.string().min(2, "Tedavi adı en az 2 karakter olmalıdır."),
   category: z.string().optional(),
-  cost: z.coerce.number().min(0, "Maliyet 0'dan küçük olamaz."),
-  duration: z.coerce.number().optional(),
+  cost: z.string().min(1, "Maliyet girilmelidir."),
+  duration: z.string().optional(),
   description: z.string().optional(),
 });
 
@@ -34,14 +34,18 @@ export default function TreatmentList({ initialTreatments }: { initialTreatments
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<TreatmentFormValues>({
     resolver: zodResolver(treatmentSchema),
     defaultValues: {
-      cost: 0,
-      duration: 30
+      cost: "0",
+      duration: "30"
     }
   });
 
   const onSubmit = async (data: TreatmentFormValues) => {
     try {
-      const newTreatment = await createTreatment(data);
+      const newTreatment = await createTreatment({
+        ...data,
+        cost: parseFloat(data.cost),
+        duration: data.duration ? parseInt(data.duration) : undefined,
+      });
       setTreatments([newTreatment, ...treatments]);
       setIsModalOpen(false);
       reset();

@@ -35,6 +35,10 @@ export async function createAppointment(data: z.infer<typeof appointmentSchema>)
       ...validated,
       dateTime: new Date(validated.dateTime),
     },
+    include: {
+      patient: true,
+      doctor: true,
+    }
   });
 
   revalidatePath("/randevular");

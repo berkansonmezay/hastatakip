@@ -80,7 +80,7 @@ export default function ExaminationList({
                   <UserIcon size={20} />
                 </div>
                 <div>
-                  <div className="font-bold">{exam.patient.fullName}</div>
+                  <div className="font-bold">{exam.patient?.fullName || "Bilinmiyor"}</div>
                   <div className="text-xs text-slate-500">{format(new Date(exam.createdAt), "dd MMM yyyy HH:mm", { locale: tr })}</div>
                 </div>
               </div>
@@ -104,7 +104,7 @@ export default function ExaminationList({
             </div>
 
             <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between mt-auto">
-              <div className="text-xs text-slate-500">Dr. {exam.doctor.name || "Bilinmiyor"}</div>
+              <div className="text-xs text-slate-500">Dr. {exam.doctor?.name || "Bilinmiyor"}</div>
               <button className="text-blue-600 hover:underline text-sm font-medium">Detayları Gör</button>
             </div>
           </div>
