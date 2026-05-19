@@ -130,7 +130,7 @@ export default function InventoryList({ initialItems }: { initialItems: any[] })
           <div>
             <div className="text-sm font-medium text-slate-500 dark:text-slate-400">Toplam Stok Değeri</div>
             <div className="text-2xl font-bold text-emerald-600 dark:text-emerald-500 mt-1">
-              {items.reduce((sum: number, item) => sum + (item.quantity * item.unitPrice), 0).toLocaleString('tr-TR')} ₺
+              {items.reduce((sum: number, item: any) => sum + (item.quantity * item.unitPrice), 0).toLocaleString('tr-TR')} ₺
             </div>
           </div>
           <div className="w-12 h-12 bg-emerald-50 dark:bg-emerald-900/20 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400">

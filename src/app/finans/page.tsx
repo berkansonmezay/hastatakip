@@ -6,7 +6,7 @@ export default async function FinancePage() {
   const payments = await getPayments();
   const patients = await prisma.patient.findMany({ select: { id: true, fullName: true } });
   
-  const totalIncome = payments.reduce((sum: number, p) => sum + p.amount, 0);
+  const totalIncome = payments.reduce((sum: number, p: any) => sum + p.amount, 0);
 
   return (
     <div className="space-y-6">
