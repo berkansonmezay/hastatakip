@@ -158,10 +158,10 @@ export default async function Dashboard() {
                 <p className="text-sm font-medium">Bekleyen randevu bulunmuyor.</p>
               </div>
             ) : (
-              pendingAppointmentsList.map((appointment) => {
+              pendingAppointmentsList.map((appointment: any) => {
                 const init = appointment.patient.fullName
                   .split(" ")
-                  .map((n) => n[0])
+                  .map((n: string) => n[0])
                   .join("")
                   .substring(0, 2)
                   .toUpperCase();
