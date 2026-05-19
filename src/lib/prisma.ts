@@ -9,9 +9,13 @@ const globalForPrisma = global as unknown as { prisma: PrismaClient };
 const getPrisma = () => {
   const dbPath = path.join(process.cwd(), "prisma", "dev.db");
 
-  // Create LibSQL client using local file path
+  // Use Turso cloud URL if provided, otherwise fallback to local SQLite file path
+  const clientUrl = process.env.TURSO_DATABASE_URL || `file:${dbPath}`;
+  const authToken = process.env.TURSO_DATABASE_URL ? process.env.TURSO_AUTH_TOKEN : undefined;
+
   const libsqlClient = createClient({
-    url: `file:${dbPath}`,
+    url: clientUrl,
+    authToken: authToken,
   });
 
   const adapter = new PrismaLibSql(libsqlClient as any);
