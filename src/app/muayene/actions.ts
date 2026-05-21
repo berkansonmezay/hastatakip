@@ -8,8 +8,18 @@ const examinationSchema = z.object({
   patientId: z.string().min(1, "Hasta seçilmelidir."),
   doctorId: z.string().min(1, "Doktor seçilmelidir."),
   complaint: z.string().optional(),
+  complaintHistory: z.string().optional(),
+  physicalExam: z.string().optional(),
+  examTemplate: z.string().optional(),
   diagnosis: z.string().optional(),
+  preliminaryDiag: z.string().optional(),
+  finalDiagnosis: z.string().optional(),
+  icd10Code: z.string().optional(),
   treatment: z.string().optional(),
+  treatmentPlan: z.string().optional(),
+  dietAdvice: z.string().optional(),
+  lifestyleAdvice: z.string().optional(),
+  controlPlan: z.string().optional(),
   notes: z.string().optional(),
 });
 

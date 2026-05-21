@@ -8,6 +8,7 @@ import {
   Users, 
   Calendar, 
   Stethoscope, 
+  Scissors,
   Activity, 
   Pill, 
   TestTube, 
@@ -19,7 +20,9 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  LogOut
+  LogOut,
+  FolderOpen,
+  FileSignature
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,9 +31,12 @@ const menuItems = [
   { icon: Users, label: "Hastalar", href: "/hastalar" },
   { icon: Calendar, label: "Randevular", href: "/randevular" },
   { icon: Stethoscope, label: "Muayene", href: "/muayene" },
+  { icon: Scissors, label: "Ameliyatlar", href: "/ameliyat" },
   { icon: Activity, label: "Tedaviler", href: "/tedaviler" },
   { icon: Pill, label: "Reçeteler", href: "/receteler" },
   { icon: TestTube, label: "Tetkikler", href: "/tetkikler" },
+  { icon: FolderOpen, label: "Dosya Arşivi", href: "/dosyalar" },
+  { icon: FileSignature, label: "Onam Formları", href: "/onam" },
   { icon: Wallet, label: "Finans", href: "/finans" },
   { icon: Package, label: "Stok", href: "/stok" },
   { icon: UserCog, label: "Personeller", href: "/personeller" },

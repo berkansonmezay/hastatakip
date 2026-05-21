@@ -31,29 +31,58 @@ model User {
   labTests      LabTest[]     @relation("DoctorLabTests")
   prescriptions Prescription[] @relation("DoctorPrescriptions")
   notifications Notification[]
+  surgeries     Surgery[]     @relation("SurgeonSurgeries")
+  followUps     FollowUp[]    @relation("DoctorFollowUps")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 }
 
 model Patient {
-  id            String    @id @default(cuid())
-  fullName      String
-  tcNo          String?   @unique
-  phone         String?
-  email         String?
-  address       String?
-  gender        String?
-  birthDate     DateTime?
-  bloodGroup    String?
-  insuranceInfo String?
-  notes         String?
-  appointments  Appointment[]
-  examinations  Examination[]
-  payments      Payment[]
-  labTests      LabTest[]
-  prescriptions Prescription[]
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id                    String    @id @default(cuid())
+  fullName              String
+  tcNo                  String?   @unique
+  protocolNo            String?   @unique
+  phone                 String?
+  secondPhone           String?
+  email                 String?
+  address               String?
+  gender                String?
+  birthDate             DateTime?
+  bloodGroup            String?
+  insuranceInfo         String?
+  notes                 String?
+  // Yakın bilgisi
+  relativeName          String?
+  relativePhone         String?
+  relativeRelation      String?
+  // Acil durum iletişim
+  emergencyName         String?
+  emergencyPhone        String?
+  emergencyRelation     String?
+  // Tıbbi özgeçmiş
+  smokingStatus         String?   // YOK / BIRAKTI / AKTIF
+  alcoholStatus         String?   // YOK / ARA_SIRA / DUZENLI
+  chronicDiseases       String?   // Virgülle ayrılmış liste
+  pastOperations        String?
+  systemicDiseases      String?
+  previousHospitalRecords String?
+  // Risk durumu
+  riskStatus            String?   @default("LOW") // LOW / MEDIUM / HIGH / CRITICAL
+  // İlişkiler
+  appointments          Appointment[]
+  examinations          Examination[]
+  payments              Payment[]
+  labTests              LabTest[]
+  prescriptions         Prescription[]
+  allergies             Allergy[]
+  medications           PatientMedication[]
+  familyHistory         FamilyHistory[]
+  surgeries             Surgery[]
+  followUps             FollowUp[]
+  fileAttachments       FileAttachment[]
+  consentForms          ConsentForm[]
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 }
 
 model Appointment {
@@ -70,17 +99,28 @@ model Appointment {
 }
 
 model Examination {
-  id            String    @id @default(cuid())
-  patientId     String
-  patient       Patient   @relation(fields: [patientId], references: [id])
-  doctorId      String
-  doctor        User      @relation("DoctorExaminations", fields: [doctorId], references: [id])
-  complaint     String?
-  diagnosis     String?
-  treatment     String?
-  notes         String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id               String    @id @default(cuid())
+  patientId        String
+  patient          Patient   @relation(fields: [patientId], references: [id])
+  doctorId         String
+  doctor           User      @relation("DoctorExaminations", fields: [doctorId], references: [id])
+  complaint        String?
+  complaintHistory String?   // Hastalık süreci, önceki tedaviler
+  physicalExam     String?   // Fizik muayene bulguları
+  examTemplate     String?   // Kullanılan şablon adı
+  diagnosis        String?
+  preliminaryDiag  String?   // Ön tanı
+  finalDiagnosis   String?   // Kesin tanı
+  icd10Code        String?   // ICD-10 kodu
+  treatment        String?
+  treatmentPlan    String?   // Detaylı tedavi planı
+  dietAdvice       String?
+  lifestyleAdvice  String?
+  controlPlan      String?   // Kontrol planı
+  notes            String?
+  version          Int       @default(1)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 }
 
 model Payment {
@@ -89,6 +129,8 @@ model Payment {
   patient       Patient   @relation(fields: [patientId], references: [id])
   amount        Float
   type          String    // CASH, CREDIT_CARD, TRANSFER
+  category      String?   // EXAMINATION, SURGERY, OTHER
+  description   String?
   date          DateTime  @default(now())
   notes         String?
   createdAt     DateTime  @default(now())
@@ -166,4 +208,125 @@ model PrescriptionItem {
   dosage         String
   frequency      String
   duration       String
+}
+
+// ==========================================
+// YENİ MODELLER
+// ==========================================
+
+model Allergy {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  type      String   // DRUG / FOOD / LATEX / OTHER
+  name      String
+  severity  String?  // MILD / MODERATE / SEVERE
+  reaction  String?
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model PatientMedication {
+  id        String    @id @default(cuid())
+  patientId String
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  name      String
+  dosage    String?
+  frequency String?
+  startDate DateTime?
+  endDate   DateTime?
+  isActive  Boolean   @default(true)
+  notes     String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model FamilyHistory {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  condition String   // Diyabet, HT, Kanser vb.
+  relation  String?  // Anne, Baba, Kardeş
+  notes     String?
+  createdAt DateTime @default(now())
+}
+
+model Surgery {
+  id              String   @id @default(cuid())
+  patientId       String
+  patient         Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  name            String
+  date            DateTime?
+  surgeonId       String?
+  surgeon         User?    @relation("SurgeonSurgeries", fields: [surgeonId], references: [id])
+  assistantTeam   String?
+  technique       String?
+  duration        Int?     // dakika cinsinden
+  anesthesiaType  String?
+  operationNote   String?
+  complication    String?
+  status          String   @default("PLANNED") // PLANNED / COMPLETED / CANCELLED
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model FollowUp {
+  id        String   @id @default(cuid())
+  patientId String
+  patient   Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  doctorId  String?
+  doctor    User?    @relation("DoctorFollowUps", fields: [doctorId], references: [id])
+  date      DateTime
+  type      String?  // CONTROL / STITCH_REMOVAL / DRESSING / EVALUATION
+  notes     String?
+  result    String?
+  createdAt DateTime @default(now())
+}
+
+model FileAttachment {
+  id          String   @id @default(cuid())
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  fileName    String
+  filePath    String
+  fileType    String   // LAB_RESULT / XRAY / CT / MR / ULTRASOUND / PATHOLOGY / PHOTO
+  category    String?
+  description String?
+  uploadedAt  DateTime @default(now())
+}
+
+model Expense {
+  id          String   @id @default(cuid())
+  category    String   // CLINIC / PERSONNEL / SUPPLY / RENT / TAX / BILL
+  description String?
+  amount      Float
+  date        DateTime @default(now())
+  notes       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?
+  userName  String?
+  action    String   // CREATE / UPDATE / DELETE / LOGIN / LOGOUT
+  entity    String   // Patient / Appointment / vb.
+  entityId  String?
+  details   String?  // JSON - değişiklik detayları
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
+
+model ConsentForm {
+  id        String    @id @default(cuid())
+  patientId String
+  patient   Patient   @relation(fields: [patientId], references: [id], onDelete: Cascade)
+  type      String    // KVKK / SURGERY / ANESTHESIA / TREATMENT
+  title     String?
+  content   String?
+  signedAt  DateTime?
+  signature String?   // Base64 dijital imza
+  pdfPath   String?
+  createdAt DateTime  @default(now())
 }

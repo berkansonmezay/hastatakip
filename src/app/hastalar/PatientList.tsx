@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import { 
   Search, 
   Plus, 
@@ -10,7 +11,10 @@ import {
   Calendar as CalendarIcon,
   Trash2,
   Edit2,
-  ChevronRight
+  ChevronRight,
+  AlertTriangle,
+  Pill,
+  Shield
 } from "lucide-react";
 import { format } from "date-fns";
 import { tr } from "date-fns/locale";
@@ -23,6 +27,7 @@ import { cn } from "@/lib/utils";
 const patientSchema = z.object({
   fullName: z.string().min(2, "Ad soyad en az 2 karakter olmalıdır."),
   tcNo: z.string().length(11, "TC Kimlik No 11 hane olmalıdır.").optional().or(z.literal("")),
+  protocolNo: z.string().optional().or(z.literal("")),
   phone: z.string().optional(),
   email: z.string().email("Geçerli bir e-posta giriniz.").optional().or(z.literal("")),
   address: z.string().optional(),
@@ -33,10 +38,19 @@ const patientSchema = z.object({
 
 type PatientFormValues = z.infer<typeof patientSchema>;
 
+const RISK_COLORS: Record<string, string> = {
+  LOW: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  MEDIUM: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
+  HIGH: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400",
+  CRITICAL: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+};
+const RISK_LABELS: Record<string, string> = { LOW: "Düşük", MEDIUM: "Orta", HIGH: "Yüksek", CRITICAL: "Kritik" };
+
 export default function PatientList({ initialPatients }: { initialPatients: any[] }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [patients, setPatients] = useState(initialPatients);
+  const router = useRouter();
 
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<PatientFormValues>({
     resolver: zodResolver(patientSchema),
@@ -98,13 +112,14 @@ export default function PatientList({ initialPatients }: { initialPatients: any[
               <tr className="bg-slate-50 dark:bg-slate-800/50 text-slate-500 dark:text-slate-400 text-xs uppercase font-semibold">
                 <th className="px-6 py-4">Hasta Bilgileri</th>
                 <th className="px-6 py-4">İletişim</th>
+                <th className="px-6 py-4">Durum</th>
                 <th className="px-6 py-4">Kayıt Tarihi</th>
                 <th className="px-6 py-4 text-right">İşlemler</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {filteredPatients.map((patient) => (
-                <tr key={patient.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group">
+                <tr key={patient.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/30 transition-colors group cursor-pointer" onClick={() => router.push(`/hastalar/${patient.id}`)}>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 font-bold text-sm">
@@ -129,12 +144,34 @@ export default function PatientList({ initialPatients }: { initialPatients: any[
                     </div>
                   </td>
                   <td className="px-6 py-4">
+                    <div className="flex flex-wrap gap-1.5">
+                      {patient.riskStatus && patient.riskStatus !== "LOW" && (
+                        <span className={cn("px-1.5 py-0.5 rounded text-xs font-medium flex items-center gap-1", RISK_COLORS[patient.riskStatus] || "")}>
+                          <Shield size={10} /> {RISK_LABELS[patient.riskStatus] || patient.riskStatus}
+                        </span>
+                      )}
+                      {patient.allergies?.length > 0 && (
+                        <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 flex items-center gap-1">
+                          <AlertTriangle size={10} /> {patient.allergies.length} Alerji
+                        </span>
+                      )}
+                      {patient.medications?.length > 0 && (
+                        <span className="px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 flex items-center gap-1">
+                          <Pill size={10} /> {patient.medications.length} İlaç
+                        </span>
+                      )}
+                      {(!patient.riskStatus || patient.riskStatus === "LOW") && !patient.allergies?.length && !patient.medications?.length && (
+                        <span className="text-xs text-slate-400">—</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
                     <div className="flex items-center gap-2 text-sm text-slate-500">
                       <CalendarIcon size={14} />
                       {format(new Date(patient.createdAt), "dd MMM yyyy", { locale: tr })}
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                     <div className="flex items-center justify-end gap-2">
                       <button className="p-2 text-slate-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-all">
                         <Edit2 size={18} />
@@ -154,7 +191,7 @@ export default function PatientList({ initialPatients }: { initialPatients: any[
               ))}
               {filteredPatients.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
+                  <td colSpan={5} className="px-6 py-12 text-center text-slate-500 dark:text-slate-400 italic">
                     {search ? "Arama kriterlerine uygun hasta bulunamadı." : "Henüz kayıtlı hasta bulunmuyor."}
                   </td>
                 </tr>
@@ -197,6 +234,16 @@ export default function PatientList({ initialPatients }: { initialPatients: any[
                   placeholder="12345678901"
                 />
                 {errors.tcNo && <p className="text-xs text-red-500">{errors.tcNo.message}</p>}
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Protokol No</label>
+                <input 
+                  {...register("protocolNo")}
+                  className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                  placeholder="PRT-123"
+                />
+                {errors.protocolNo && <p className="text-xs text-red-500">{errors.protocolNo.message}</p>}
               </div>
 
               <div className="space-y-2">
