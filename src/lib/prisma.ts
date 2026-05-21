@@ -3,7 +3,6 @@ import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { createClient } from "@libsql/client";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
 
 const dbPath = path.join(process.cwd(), "prisma", "dev.db");
 const tursoUrl = process.env.TURSO_DATABASE_URL;
@@ -32,6 +31,7 @@ const getPrisma = () => {
     });
   } else {
     console.log(`Database: Using Better-SQLite3 adapter with URL: file:${dbPath}`);
+    const { PrismaBetterSqlite3 } = require("@prisma/adapter-better-sqlite3");
     const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
     client = new PrismaClient({
       adapter,
