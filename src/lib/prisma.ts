@@ -33,27 +33,16 @@ const globalForPrisma = global as unknown as { prisma: any };
 const getPrisma = () => {
   let client: PrismaClient;
 
-  if (isTurso) {
-    const authToken = process.env.TURSO_AUTH_TOKEN;
-    console.log(`Database: Using LibSQL adapter with URL: ${clientUrl}`);
-    const libsqlClient = createClient({
-      url: clientUrl,
-      authToken: authToken,
-    });
-    const adapter = new PrismaLibSql(libsqlClient as any);
-    client = new PrismaClient({
-      adapter,
-      log: ["query"],
-    });
-  } else {
-    console.log(`Database: Using Better-SQLite3 adapter with URL: file:${dbPath}`);
-    const { PrismaBetterSqlite3 } = require("@prisma/adapter-better-sqlite3");
-    const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
-    client = new PrismaClient({
-      adapter,
-      log: ["query"],
-    });
-  }
+  console.log(`Database: Using LibSQL adapter with URL: ${clientUrl}`);
+  const libsqlClient = createClient({
+    url: clientUrl,
+    authToken: isTurso ? process.env.TURSO_AUTH_TOKEN : undefined,
+  });
+  const adapter = new PrismaLibSql(libsqlClient as any);
+  client = new PrismaClient({
+    adapter,
+    log: ["query"],
+  });
 
   // Extend the client to auto-sync modifications to Google Sheets asynchronously
   return client.$extends({
