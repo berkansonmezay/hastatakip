@@ -1,10 +1,26 @@
 import path from "path";
+import fs from "fs";
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
 import { createClient } from "@libsql/client";
 
-const dbPath = path.join(process.cwd(), "prisma", "dev.db");
+let dbPath = path.join(process.cwd(), "prisma", "dev.db");
+
+// Copy SQLite database to /tmp on Vercel to allow write access
+if (process.env.VERCEL || process.env.NODE_ENV === "production") {
+  const tmpPath = path.join("/tmp", "dev.db");
+  try {
+    if (!fs.existsSync(tmpPath)) {
+      console.log(`[Database Setup] Copying database template from ${dbPath} to ${tmpPath}`);
+      fs.copyFileSync(dbPath, tmpPath);
+    }
+    dbPath = tmpPath;
+  } catch (error) {
+    console.error("[Database Setup] Failed to copy database to /tmp:", error);
+  }
+}
+
 const tursoUrl = process.env.TURSO_DATABASE_URL;
 const isTurso = !!(tursoUrl && tursoUrl !== "undefined" && tursoUrl.trim() !== "");
 const clientUrl = isTurso ? tursoUrl : `file:${dbPath}`;
