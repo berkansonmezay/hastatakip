@@ -1,46 +1,21 @@
-import path from "path";
-import fs from "fs";
 import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
-import { PrismaLibSql } from "@prisma/adapter-libsql";
-import { createClient } from "@libsql/client";
+import { neonConfig } from "@neondatabase/serverless";
+import { PrismaNeon } from "@prisma/adapter-neon";
+import ws from "ws";
 
-let dbPath = path.join(process.cwd(), "prisma", "dev.db");
-
-// Copy SQLite database to /tmp on Vercel to allow write access
-if (process.env.VERCEL || process.env.NODE_ENV === "production") {
-  const tmpPath = path.join("/tmp", "dev.db");
-  try {
-    if (!fs.existsSync(tmpPath)) {
-      console.log(`[Database Setup] Copying database template from ${dbPath} to ${tmpPath}`);
-      fs.copyFileSync(dbPath, tmpPath);
-    }
-    dbPath = tmpPath;
-  } catch (error) {
-    console.error("[Database Setup] Failed to copy database to /tmp:", error);
-  }
-}
-
-const tursoUrl = process.env.TURSO_DATABASE_URL;
-const isTurso = !!(tursoUrl && tursoUrl !== "undefined" && tursoUrl.trim() !== "");
-const clientUrl = isTurso ? tursoUrl : `file:${dbPath}`;
-
-// Set DATABASE_URL immediately before importing @prisma/client
-process.env.DATABASE_URL = clientUrl;
+neonConfig.webSocketConstructor = ws;
 
 const globalForPrisma = global as unknown as { prisma: any };
 
 const getPrisma = () => {
-  let client: PrismaClient;
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    throw new Error("DATABASE_URL environment variable is missing.");
+  }
+  const adapter = new PrismaNeon({ connectionString });
 
-  const finalUrl = clientUrl || `file:${dbPath}` || "file:./prisma/dev.db";
-  console.log(`[getPrisma] Initializing database client. clientUrl: ${clientUrl}, dbPath: ${dbPath}, finalUrl: ${finalUrl}`);
-  
-  const adapter = new PrismaLibSql({
-    url: finalUrl,
-    authToken: isTurso ? process.env.TURSO_AUTH_TOKEN : undefined,
-  });
-  client = new PrismaClient({
+  let client = new PrismaClient({
     adapter,
     log: ["query"],
   });

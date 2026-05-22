@@ -1,9 +1,16 @@
 const { PrismaClient } = require("@prisma/client");
-const { PrismaBetterSqlite3 } = require("@prisma/adapter-better-sqlite3");
-const path = require("path");
+const { PrismaNeon } = require("@prisma/adapter-neon");
+const ws = require("ws");
+const { neonConfig } = require("@neondatabase/serverless");
+require("dotenv").config();
 
-const dbPath = path.join(process.cwd(), "prisma", "dev.db");
-const adapter = new PrismaBetterSqlite3({ url: `file:${dbPath}` });
+neonConfig.webSocketConstructor = ws;
+
+const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL environment variable is missing.");
+}
+const adapter = new PrismaNeon({ connectionString });
 const prisma = new PrismaClient({ adapter });
 async function main() {
   // Create a default doctor
