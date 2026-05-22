@@ -33,12 +33,13 @@ const globalForPrisma = global as unknown as { prisma: any };
 const getPrisma = () => {
   let client: PrismaClient;
 
-  console.log(`Database: Using LibSQL adapter with URL: ${clientUrl}`);
-  const libsqlClient = createClient({
-    url: clientUrl,
+  const finalUrl = clientUrl || `file:${dbPath}` || "file:./prisma/dev.db";
+  console.log(`[getPrisma] Initializing database client. clientUrl: ${clientUrl}, dbPath: ${dbPath}, finalUrl: ${finalUrl}`);
+  
+  const adapter = new PrismaLibSql({
+    url: finalUrl,
     authToken: isTurso ? process.env.TURSO_AUTH_TOKEN : undefined,
   });
-  const adapter = new PrismaLibSql(libsqlClient as any);
   client = new PrismaClient({
     adapter,
     log: ["query"],

@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "node --experimental-require-module node_modules/prisma/build/index.js generate && next build",
     "start": "next start",
     "lint": "eslint",
     "seed": "node prisma/seed.js"

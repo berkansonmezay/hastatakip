@@ -13,16 +13,30 @@ const getSheetsClient = async () => {
     return null;
   }
 
-  if (!fs.existsSync(credentialsPath)) {
-    console.warn("Google Sheets sync is disabled: google-credentials.json not found in project root.");
+  let auth: GoogleAuth;
+
+  if (process.env.GOOGLE_CREDENTIALS_JSON) {
+    try {
+      const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON);
+      auth = new GoogleAuth({
+        credentials,
+        scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+      });
+    } catch (err) {
+      console.error("Failed to parse GOOGLE_CREDENTIALS_JSON env variable:", err);
+      return null;
+    }
+  } else if (fs.existsSync(credentialsPath)) {
+    auth = new GoogleAuth({
+      keyFile: credentialsPath,
+      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+    });
+  } else {
+    console.warn("Google Sheets sync is disabled: Neither GOOGLE_CREDENTIALS_JSON env nor google-credentials.json file was found.");
     return null;
   }
 
   try {
-    const auth = new GoogleAuth({
-      keyFile: credentialsPath,
-      scopes: ["https://www.googleapis.com/auth/spreadsheets"],
-    });
     const client = await auth.getClient();
     return google.sheets({ version: "v4", auth: client as any });
   } catch (error) {
